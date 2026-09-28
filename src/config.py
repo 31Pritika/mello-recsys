@@ -39,3 +39,9 @@ EVAL_N_USERS  = 5_000
 EVAL_SEED     = 42
 LIKE_THRESHOLD = 4.0
 TOP_K          = 10
+
+# ── Phase 2: Content & Hybrid ──────────────────────────────────────────────────
+MOVIE_EMBEDDINGS_PATH = ARTIFACTS_DIR / "movie_embeddings.npy"
+HYBRID_ALPHA_PATH     = ARTIFACTS_DIR / "hybrid_alpha.pkl"
+EMBEDDING_MODEL_NAME  = "all-MiniLM-L6-v2"
+EMBEDDING_BATCH_SIZE  = 64
