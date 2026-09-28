@@ -1,0 +1,64 @@
+============================================================
+PHASE 2 EVALUATION (Hybrid & Neural Content Recommender)
+============================================================
+Loading ratings and movie embeddings …
+  Ratings: 1,416,164 | Catalog movies: 28,154
+Splitting ratings 70% Train / 10% Validation / 20% Test per user …
+  Train: 990,832 | Validation: 142,240 | Test: 283,092
+
+Building train sparse matrix and fitting SVD (n_components=20) on train only …
+Indexing per-user train histories …
+
+Tuning alpha over [0.0, 0.1, ..., 1.0] on VALIDATION precision@10 …
+  Validating with 5,000 validation users who have liked items …
+ alpha    val_precision@10
+/home/pritika_agarwal/repos/mello-recsys/src/evaluate_phase2.py:209: RuntimeWarning: invalid value encountered in multiply
+  h_scores = alpha * z_svd + (1.0 - alpha) * z_cnt
+   0.0              0.0000
+   0.1              0.0558
+   0.2              0.0828
+   0.3              0.0851
+   0.4              0.0853
+   0.5              0.0853
+   0.6              0.0852
+   0.7              0.0849
+   0.8              0.0847
+   0.9              0.0845
+   1.0              0.0007
+
+→ Best alpha on validation set: 0.5 (precision@10 = 0.0853)
+Saved tuned alpha=0.50 to /home/pritika_agarwal/repos/mello-recsys/model_artifacts/hybrid_alpha.pkl
+
+Evaluating on TEST split (sample=5000) …
+  Test users evaluated: 5,000 (each has >= 1 liked test item)
+
+==============================================================================
+OVERALL TEST RESULTS (N = 5,000 users)
+==============================================================================
+Model                        Precision@10      Pop Skew    Catalog Coverage
+---------------------------------------------------------------------------
+popularity                         0.0822         3.424        48 ( 0.2%)
+SVD                                0.1514         3.196       530 ( 1.9%)
+content-only                       0.0019         0.758     3,497 (12.4%)
+hybrid (alpha=0.5)                 0.1537         3.192       560 ( 2.0%)
+
+==============================================================================
+COLD-START USERS (<= 5 train ratings, N = 0 users)
+==============================================================================
+Model                        Precision@10
+------------------------------------------
+popularity                         0.0000
+SVD                                0.0000
+content-only                       0.0000
+hybrid (alpha=0.5)                 0.0000
+
+==============================================================================
+HEAVY USERS (>= 50 train ratings, N = 1,868 users)
+==============================================================================
+Model                        Precision@10
+------------------------------------------
+popularity                         0.1575
+SVD                                0.2727
+content-only                       0.0021
+hybrid (alpha=0.5)                 0.2757
+==============================================================================
