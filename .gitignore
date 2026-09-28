@@ -1,0 +1,26 @@
+# Virtual environment
+venv/
+.venv/
+
+# Data (ratings.csv is ~700 MB)
+data/
+*.csv
+
+# Trained artifacts (regenerate with train_and_save.py)
+model_artifacts/
+*.joblib
+*.npy
+*.parquet
+
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+
+# Secrets, if you add API keys later (Gemini, Supabase)
+.env
