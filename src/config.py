@@ -46,3 +46,15 @@ HYBRID_ALPHA_PATH              = ARTIFACTS_DIR / "hybrid_alpha.pkl"
 EMBEDDING_MODEL_NAME           = "all-MiniLM-L6-v2"
 EMBEDDING_BATCH_SIZE           = 64
 MIN_TRAIN_RATINGS_CANDIDATE    = 20   # candidate filter: min train ratings for a movie to be recommendable
+
+# ── Phase 2 Upgrades: Implicit ALS & LGBMRanker ────────────────────────────────
+ALS_MODEL_PATH                 = ARTIFACTS_DIR / "als_model.pkl"
+ALS_USER_FACTORS_PATH          = ARTIFACTS_DIR / "als_user_factors.npy"
+ALS_ITEM_FACTORS_PATH          = ARTIFACTS_DIR / "als_item_factors.npy"
+ALS_FACTORS                    = 64
+ALS_REGULARIZATION             = 0.05
+ALS_ITERATIONS                 = 15
+ALS_ALPHA                      = 40.0
+ALS_SEED                       = 42
+
+RERANKER_MODEL_PATH            = ARTIFACTS_DIR / "reranker_lgbm.pkl"

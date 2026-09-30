@@ -7,3 +7,5 @@ fastapi
 uvicorn
 pydantic
 sentence-transformers
+implicit
+lightgbm
