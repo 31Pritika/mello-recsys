@@ -198,44 +198,42 @@ Evaluated on $N = 5,000$ test users with 95% bootstrap confidence intervals (1,0
 
 #### Final Combined Benchmark Table (Precision@10)
 
-| Evaluation Condition | Popularity | SVD (20 comp) | ALS (64 factors) | Content-Only | Fixed Hybrid (α=0.5) | Learned Reranker (LGBM) |
+| Evaluation Condition | Popularity | SVD (20 comp) | ALS (Tuned, 32f, α=5) | Content-Only | Fixed Hybrid (α=0.5) | Learned Reranker (100 Trees) |
 |---|---|---|---|---|---|---|
-| **1. Overall (no filter)** | 0.0822 | 0.1514 | 0.1323 | 0.0019 | **0.1537** | 0.0831 |
-| **2. Cand-filtered (≥20)** | 0.0822 | 0.1514 | 0.1323 | 0.0079 | **0.1525** | 0.0835 |
-| **3. Heavy users (≥50 train)** | 0.1575 | 0.2727 | 0.2125 | 0.0021 | **0.2757** | 0.1188 |
-| **4. User cold-start (n=1)** | 0.3498 | 0.3036 | 0.1612 | 0.0137 | **0.3020** | 0.2109 |
-| **4. User cold-start (n=3)** | 0.3447 | 0.3292 | 0.2642 | 0.0213 | **0.3312** | 0.2553 |
-| **4. User cold-start (n=5)** | 0.3409 | 0.3533 | 0.3282 | 0.0209 | **0.3580** | 0.3045 |
+| **1. Overall (no filter)** | 0.0822 | 0.1514 | **0.1657** | 0.0019 | 0.1537 | 0.1364 |
+| **2. Cand-filtered (≥20)** | 0.0822 | 0.1514 | **0.1657** | 0.0079 | 0.1525 | 0.1362 |
+| **3. Heavy users (≥50 train)** | 0.1575 | 0.2727 | **0.2990** | 0.0021 | 0.2757 | 0.2282 |
+| **4. User cold-start (n=1)** | 0.3498 | 0.3036 | 0.1890 | 0.0137 | 0.3020 | **0.2155** |
+| **4. User cold-start (n=3)** | 0.3447 | 0.3292 | **0.2938** | 0.0213 | 0.3312 | 0.2393 |
+| **4. User cold-start (n=5)** | 0.3409 | 0.3533 | 0.3501 | 0.0209 | **0.3580** | 0.2745 |
 | **5. Item cold-start (500 items)**| 0.0061 | 0.0000 | 0.0000 | 0.0002 | 0.0000 | 0.0000 |
 
 #### 95% Bootstrap Confidence Intervals & Paired Differences (Condition 1: Overall)
 
 | Model / Comparison | Precision@10 | 95% Bootstrap CI | Paired Lift vs Baseline |
 |---|---|---|---|
-| **Fixed Hybrid (α=0.5)** | **0.1537** | [0.1491, 0.1586] | **+0.0023 [0.0013, 0.0033]** vs SVD |
-| **SVD** | 0.1514 | [0.1467, 0.1564] | Baseline |
-| **ALS** | 0.1323 | [0.1282, 0.1360] | **-0.0192 [-0.0225, -0.0156]** vs SVD |
-| **Learned Reranker** | 0.0831 | [0.0804, 0.0859] | **-0.0706 [-0.0747, -0.0665]** vs Hybrid |
-| **Popularity** | 0.0822 | [0.0787, 0.0856] | - |
-| **Content-only** | 0.0019 | [0.0015, 0.0023] | - |
+| **Tuned ALS (32 factors, α=5)** | **0.1657** | [0.1606, 0.1707] | **+0.0142 [0.0117, 0.0167]** vs SVD |
+| **Fixed Hybrid (α=0.5)** | 0.1537 | [0.1491, 0.1586] | **+0.0023 [0.0013, 0.0033]** vs SVD |
+| **SVD Baseline** | 0.1514 | [0.1467, 0.1564] | Baseline |
+| **Learned Reranker (100 Trees)** | 0.1364 | [0.1324, 0.1404] | **-0.0293 [-0.0319, -0.0264]** vs Tuned ALS |
+| **Popularity Baseline** | 0.0822 | [0.0787, 0.0856] | - |
+| **Content-Only** | 0.0019 | [0.0015, 0.0023] | - |
 
 #### Key Findings & Model Dynamics
 
-1. **Fixed Hybrid is the Overall Champion**:
-   - Fixed hybrid blending ($\alpha=0.5$) achieves the highest Precision@10 across overall ($0.1537$), heavy users ($0.2757$), and simulated cold-start ($n=5: 0.3580$).
-   - The paired lift over SVD ($+0.0023$, 95% CI $[0.0013, 0.0033]$) is statistically significant.
-2. **ALS vs. SVD (Explicit vs. Implicit Feedback)**:
-   - SVD significantly outperforms ALS ($0.1514$ vs $0.1323$, paired difference $-0.0192$ with 95% CI $[-0.0225, -0.0156]$).
-   - *Why*: MovieLens ratings are explicit grades (1–5 stars). In ALS implicit feedback formulation, unobserved items are treated as negative interactions with uniform weight 1.0, penalizing long-tail unrated movies that users might have loved.
-3. **Learned Reranker (LGBM LambdaRank)**:
-   - Overall, the reranker ($0.0831$) does **not** beat the fixed hybrid ($0.1537$) or ALS ($0.1323$).
-   - *Feature importance analysis*: `als_score` (40.0%) and `log1p_train_count` (36.7%) dominate. Because unrated negatives during training were sampled with popularity weighting, the tree model learned a strong popularity heuristic, causing its overall score to converge near the popularity baseline ($0.0822$).
-   - *Where the Reranker excels*: In extreme user cold-start ($n=1$), ALS collapses to $0.1612$, while the reranker scores **$0.2109$**—a statistically significant paired lift of **$+0.0497$ [0.0416, 0.0577]** over ALS. The engineered popularity and genre features buffer the breakdown of latent factor dot products when user interaction history is minimal.
+1. **Tuned ALS is the Overall Champion**:
+   - Tuning ALS hyperparameters (`factors=32, reg=0.05, alpha=5.0`) unlocks **0.1657** overall precision and **0.2990** on heavy users, outperforming SVD (0.1514) with a statistically significant paired lift of **+0.0142 [0.0117, 0.0167]**.
+   - The earlier underperformance (0.1323) was an artifact of the default `alpha=40.0`, which over-penalized unobserved items.
+2. **The Reranker Root Cause and Tie-Collapse Resolution**:
+   - In earlier runs, `callbacks=[early_stopping(15)]` stopped at Round 1 due to noisy NDCG validation gradients, leaving the model with a **single tree of 31 leaves**. This caused severe tie-breaking collapse on the top retrieval candidates, plummeting precision to 0.0809.
+   - Retraining with early stopping disabled (`n_estimators=100`) resolved the tie collapse, surging Precision@10 from 0.0809 to **0.1364** (+68.6% relative gain).
+   - **Conclusion on Reranking**: Gradient-boosted reranking with the lambdarank objective did not improve on tuned ALS alone at this candidate-pool size given the available features, and the single-tree collapse was the root cause of the earlier, worse result.
+3. **Where the Reranker Outperforms ALS (User Cold-Start $n=1$)**:
+   - In extreme user cold-start ($n=1$ rating kept), ALS latent factors degrade (0.1890), while the reranker scores **0.2155** (+0.0265 paired lift over ALS), as its popularity and genre features buffer the breakdown of sparse factor representations.
 4. **Candidate Filter Impact ($\ge 20$ ratings)**:
-   - Filtering out catalog items with $< 20$ train ratings boosts Content-Only precision by **4.1x** ($0.0019 \to 0.0079$), by preventing it from wasting recommendations on obscure items with zero test-set probability. SVD and ALS are naturally robust to this.
+   - Filtering out catalog items with $< 20$ train ratings boosts Content-Only precision by **4.1x** ($0.0019 \to 0.0079$), by eliminating tail items with zero test-set probability.
 5. **Item Cold-Start (500 removed movies)**:
-   - Collaborative filtering (SVD, ALS, Hybrid, Reranker) scores $0.0000$ since unobserved items have no train interaction data.
-   - Content-only is the only model capable of surfacing removed items ($0.0002$), though precision is bounded by the tiny target set size ($500 / 28,154$).
+   - Collaborative models score 0.0000; Content-Only is the only model able to surface newly added unrated items ($0.0002$).
 
 ### Cluster sizes (k=4)
 

@@ -243,12 +243,9 @@ def train_reranker(
     X_train: np.ndarray,
     y_train: np.ndarray,
     train_groups: list[int],
-    X_val: np.ndarray,
-    y_val: np.ndarray,
-    val_groups: list[int],
     random_state: int = EVAL_SEED,
 ) -> lgb.LGBMRanker:
-    """Train LGBMRanker with early stopping."""
+    """Train LGBMRanker with early stopping disabled (n_estimators=100)."""
     ranker = lgb.LGBMRanker(
         objective="lambdarank",
         metric="ndcg",
@@ -263,10 +260,6 @@ def train_reranker(
         X_train,
         y_train,
         group=train_groups,
-        eval_set=[(X_val, y_val)],
-        eval_group=[val_groups],
-        eval_at=[10],
-        callbacks=[lgb.early_stopping(stopping_rounds=15, verbose=False)],
     )
     return ranker
 
@@ -356,13 +349,9 @@ def main() -> None:
     shuffled_val_users = candidate_val_users.copy()
     split_rng.shuffle(shuffled_val_users)
 
-    n_tr = int(len(shuffled_val_users) * 0.85)
-    train_ranker_users = shuffled_val_users[:n_tr]
-    val_ranker_users = shuffled_val_users[n_tr:]
-
-    print(f"Building training examples ({len(train_ranker_users):,} train users, ~20 negatives/user) …")
+    print(f"Building training examples ({len(candidate_val_users):,} validation users, ~20 negatives/user) …")
     X_train, y_train, train_groups = build_validation_training_data(
-        train_ranker_users,
+        candidate_val_users,
         val_liked,
         user_train_rated,
         user_val_rated,
@@ -376,28 +365,11 @@ def main() -> None:
         seed=EVAL_SEED + 20,
     )
 
-    print(f"Building internal validation examples ({len(val_ranker_users):,} val users) …")
-    X_val, y_val, val_groups = build_validation_training_data(
-        val_ranker_users,
-        val_liked,
-        user_train_rated,
-        user_val_rated,
-        user_train_liked,
-        user_to_idx,
-        als_user_factors,
-        als_item_factors,
-        movie_embeddings,
-        meta,
-        n_negatives_per_user=20,
-        seed=EVAL_SEED + 30,
-    )
-
     print(f"  X_train: {X_train.shape} in {len(train_groups):,} groups")
-    print(f"  X_val  : {X_val.shape} in {len(val_groups):,} groups")
 
-    # 6. Fit LGBMRanker
-    print("\nFitting LGBMRanker (objective=lambdarank) …")
-    ranker = train_reranker(X_train, y_train, train_groups, X_val, y_val, val_groups)
+    # 6. Fit LGBMRanker (n_estimators=100, no early stopping)
+    print("\nFitting LGBMRanker (objective=lambdarank, n_estimators=100) …")
+    ranker = train_reranker(X_train, y_train, train_groups)
 
     # 7. Report feature importances
     print("\n" + "=" * 45)

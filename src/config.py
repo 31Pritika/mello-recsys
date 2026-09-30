@@ -51,10 +51,10 @@ MIN_TRAIN_RATINGS_CANDIDATE    = 20   # candidate filter: min train ratings for 
 ALS_MODEL_PATH                 = ARTIFACTS_DIR / "als_model.pkl"
 ALS_USER_FACTORS_PATH          = ARTIFACTS_DIR / "als_user_factors.npy"
 ALS_ITEM_FACTORS_PATH          = ARTIFACTS_DIR / "als_item_factors.npy"
-ALS_FACTORS                    = 64
+ALS_FACTORS                    = 32
 ALS_REGULARIZATION             = 0.05
 ALS_ITERATIONS                 = 15
-ALS_ALPHA                      = 40.0
+ALS_ALPHA                      = 5.0
 ALS_SEED                       = 42
 
 RERANKER_MODEL_PATH            = ARTIFACTS_DIR / "reranker_lgbm.pkl"
