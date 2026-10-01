@@ -272,3 +272,4 @@ ratings.csv (26M rows)
                  ↓
     FastAPI loads all artifacts once at startup
 ```
+open follow up: try ease r with phase 2 algorithm
